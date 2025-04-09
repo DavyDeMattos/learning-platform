@@ -33,9 +33,16 @@ class Cours
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'cours')]
     private Collection $formateur;
 
+    /**
+     * @var Collection<int, Inscription>
+     */
+    #[ORM\OneToMany(targetEntity: Inscription::class, mappedBy: 'cours')]
+    private Collection $inscriptions;
+
     public function __construct()
     {
         $this->formateur = new ArrayCollection();
+        $this->inscriptions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -111,6 +118,36 @@ class Cours
     public function removeFormateur(User $formateur): static
     {
         $this->formateur->removeElement($formateur);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Inscription>
+     */
+    public function getInscriptions(): Collection
+    {
+        return $this->inscriptions;
+    }
+
+    public function addInscription(Inscription $inscription): static
+    {
+        if (!$this->inscriptions->contains($inscription)) {
+            $this->inscriptions->add($inscription);
+            $inscription->setCours($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInscription(Inscription $inscription): static
+    {
+        if ($this->inscriptions->removeElement($inscription)) {
+            // set the owning side to null (unless already changed)
+            if ($inscription->getCours() === $this) {
+                $inscription->setCours(null);
+            }
+        }
 
         return $this;
     }
